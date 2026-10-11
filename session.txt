@@ -1,0 +1,1 @@
+lightagent-cli --session-id 56037dc1-c9ab-4fa2-b4fc-cd7e6b4ab978

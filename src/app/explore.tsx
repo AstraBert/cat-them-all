@@ -1,180 +1,157 @@
 import { Image } from 'expo-image';
-import { SymbolView } from 'expo-symbols';
-import { Platform, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Alert, FlatList, Platform, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ExternalLink } from '@/components/external-link';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Collapsible } from '@/components/ui/collapsible';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { CATS, TOTAL_CATS } from '@/constants/cats';
+import { BottomTabInset, Spacing } from '@/constants/theme';
+import { useCatCollectionContext } from '@/contexts/cat-collection-context';
 import { useTheme } from '@/hooks/use-theme';
 
-export default function TabTwoScreen() {
+export default function CollectionScreen() {
+  const collection = useCatCollectionContext();
   const safeAreaInsets = useSafeAreaInsets();
-  const insets = {
-    ...safeAreaInsets,
-    bottom: safeAreaInsets.bottom + BottomTabInset + Spacing.three,
-  };
   const theme = useTheme();
+  const { width } = useWindowDimensions();
 
-  const contentPlatformStyle = Platform.select({
-    android: {
-      paddingTop: insets.top,
-      paddingLeft: insets.left,
-      paddingRight: insets.right,
-      paddingBottom: insets.bottom,
-    },
-    web: {
-      paddingTop: Spacing.six,
-      paddingBottom: Spacing.four,
-    },
-  });
+  // Calculate card width: (screen width - horizontal padding - gap between cards) / 2
+  const horizontalPadding = Spacing.four * 2; // padding on both sides
+  const gapBetweenCards = Spacing.three;
+  const cardWidth = (width - horizontalPadding - gapBetweenCards) / 2;
+
+  const confirmFreeAll = () => {
+    Alert.alert(
+      'Free all cats?',
+      'Every cat you caught will be released back into the meme wild. The hunt starts over.',
+      [
+        { text: 'Keep them', style: 'cancel' },
+        { text: 'Free them all', style: 'destructive', onPress: () => collection.freeAll() },
+      ]
+    );
+  };
 
   return (
-    <ScrollView
-      style={[styles.scrollView, { backgroundColor: theme.background }]}
-      contentInset={insets}
-      contentContainerStyle={[styles.contentContainer, contentPlatformStyle]}>
-      <ThemedView style={styles.container}>
-        <ThemedView style={styles.titleContainer}>
-          <ThemedText type="subtitle">Explore</ThemedText>
-          <ThemedText style={styles.centerText} themeColor="textSecondary">
-            This starter app includes example{'\n'}code to help you get started.
-          </ThemedText>
-
-          <ExternalLink href="https://docs.expo.dev" asChild>
-            <Pressable style={({ pressed }) => pressed && styles.pressed}>
-              <ThemedView type="backgroundElement" style={styles.linkButton}>
-                <ThemedText type="link">Expo documentation</ThemedText>
-                <SymbolView
-                  tintColor={theme.text}
-                  name={{ ios: 'arrow.up.right.square', android: 'link', web: 'link' }}
-                  size={12}
-                />
-              </ThemedView>
-            </Pressable>
-          </ExternalLink>
-        </ThemedView>
-
-        <ThemedView style={styles.sectionsWrapper}>
-          <Collapsible title="File-based routing">
-            <ThemedText type="small">
-              This app has two screens: <ThemedText type="code">src/app/index.tsx</ThemedText> and{' '}
-              <ThemedText type="code">src/app/explore.tsx</ThemedText>
+    <ThemedView style={styles.screen}>
+      <FlatList
+        data={CATS}
+        keyExtractor={(cat) => cat.id}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
+        contentContainerStyle={[
+          styles.listContent,
+          {
+            paddingTop: Platform.OS === 'web' ? Spacing.six : safeAreaInsets.top + Spacing.three,
+            paddingBottom: safeAreaInsets.bottom + BottomTabInset + Spacing.six,
+          },
+        ]}
+        ListHeaderComponent={
+          <ThemedView style={styles.header}>
+            <ThemedText type="subtitle">Catdex</ThemedText>
+            <ThemedText themeColor="textSecondary">
+              {collection.caughtCount} / {TOTAL_CATS} caught
             </ThemedText>
-            <ThemedText type="small">
-              The layout file in <ThemedText type="code">src/app/_layout.tsx</ThemedText> sets up
-              the tab navigator.
-            </ThemedText>
-            <ExternalLink href="https://docs.expo.dev/router/introduction">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
-
-          <Collapsible title="Android, iOS, and web support">
-            <ThemedView type="backgroundElement" style={styles.collapsibleContent}>
-              <ThemedText type="small">
-                You can open this project on Android, iOS, and the web. To open the web version,
-                press <ThemedText type="smallBold">w</ThemedText> in the terminal running this
-                project.
-              </ThemedText>
+            {collection.caughtCount > 0 && (
+              <Pressable
+                onPress={confirmFreeAll}
+                style={({ pressed }) => [styles.freeButton, pressed && styles.pressed]}>
+                <ThemedText type="smallBold" style={styles.freeButtonLabel}>
+                  Free them all
+                </ThemedText>
+              </Pressable>
+            )}
+          </ThemedView>
+        }
+        renderItem={({ item: cat }) => {
+          const caught = collection.caughtIds.has(cat.id);
+          return (
+            <ThemedView type="backgroundElement" style={[styles.card, { width: cardWidth }]}>
               <Image
-                source={require('@/assets/images/tutorial-web.png')}
-                style={styles.imageTutorial}
+                source={cat.image}
+                style={[styles.cardImage, !caught && styles.cardImageHidden]}
+                contentFit="cover"
               />
+              <ThemedText type="smallBold" style={styles.cardName} numberOfLines={1}>
+                {caught ? cat.name : '???'}
+              </ThemedText>
+              {caught ? (
+                <ThemedText
+                  type="small"
+                  themeColor="textSecondary"
+                  style={styles.cardMeme}
+                  numberOfLines={3}>
+                  {cat.meme}
+                </ThemedText>
+              ) : (
+                <ThemedText
+                  type="small"
+                  themeColor="textSecondary"
+                  style={styles.cardMeme}
+                  numberOfLines={3}>
+                  Not caught yet. Keep hunting!
+                </ThemedText>
+              )}
             </ThemedView>
-          </Collapsible>
-
-          <Collapsible title="Images">
-            <ThemedText type="small">
-              For static images, you can use the <ThemedText type="code">@2x</ThemedText> and{' '}
-              <ThemedText type="code">@3x</ThemedText> suffixes to provide files for different
-              screen densities.
-            </ThemedText>
-            <Image source={require('@/assets/images/react-logo.png')} style={styles.imageReact} />
-            <ExternalLink href="https://reactnative.dev/docs/images">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
-
-          <Collapsible title="Light and dark mode components">
-            <ThemedText type="small">
-              This template has light and dark mode support. The{' '}
-              <ThemedText type="code">useColorScheme()</ThemedText> hook lets you inspect what the
-              user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-            </ThemedText>
-            <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
-
-          <Collapsible title="Animations">
-            <ThemedText type="small">
-              This template includes an example of an animated component. The{' '}
-              <ThemedText type="code">src/components/ui/collapsible.tsx</ThemedText> component uses
-              the powerful <ThemedText type="code">react-native-reanimated</ThemedText> library to
-              animate opening this hint.
-            </ThemedText>
-          </Collapsible>
-        </ThemedView>
-        {Platform.OS === 'web' && <WebBadge />}
-      </ThemedView>
-    </ScrollView>
+          );
+        }}
+        style={{ backgroundColor: theme.background }}
+      />
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollView: {
+  screen: {
     flex: 1,
   },
-  contentContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  container: {
-    maxWidth: MaxContentWidth,
-    flexGrow: 1,
-  },
-  titleContainer: {
-    gap: Spacing.three,
-    alignItems: 'center',
+  listContent: {
     paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.six,
+    gap: Spacing.three,
   },
-  centerText: {
-    textAlign: 'center',
+  row: {
+    gap: Spacing.three,
+    justifyContent: 'space-between',
+  },
+  header: {
+    alignItems: 'center',
+    gap: Spacing.two,
+    paddingBottom: Spacing.three,
+  },
+  freeButton: {
+    marginTop: Spacing.one,
+    borderColor: '#d64545',
+    borderWidth: 1,
+    paddingHorizontal: Spacing.four,
+    paddingVertical: Spacing.two,
+    borderRadius: Spacing.five,
   },
   pressed: {
     opacity: 0.7,
   },
-  linkButton: {
-    flexDirection: 'row',
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.two,
-    borderRadius: Spacing.five,
-    justifyContent: 'center',
-    gap: Spacing.one,
-    alignItems: 'center',
+  freeButtonLabel: {
+    color: '#d64545',
   },
-  sectionsWrapper: {
-    gap: Spacing.five,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
-  },
-  collapsibleContent: {
-    alignItems: 'center',
-  },
-  imageTutorial: {
-    width: '100%',
-    aspectRatio: 296 / 171,
+  card: {
     borderRadius: Spacing.three,
-    marginTop: Spacing.two,
+    padding: Spacing.three,
+    alignItems: 'center',
+    gap: Spacing.two,
   },
-  imageReact: {
-    width: 100,
-    height: 100,
-    alignSelf: 'center',
+  cardImage: {
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: Spacing.two,
+  },
+  cardImageHidden: {
+    opacity: 0.15,
+  },
+  cardName: {
+    textAlign: 'center',
+    minHeight: 20,
+  },
+  cardMeme: {
+    textAlign: 'center',
+    minHeight: 60,
+    lineHeight: 18,
   },
 });
