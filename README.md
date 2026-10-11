@@ -1,56 +1,152 @@
-# Welcome to your Expo app 👋
+# Cat Them All 🐱
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A Pokémon GO-style AR game where you catch adorable cats instead of Pokémon. Built with Expo and React Native.
 
-## Get started
+## About
 
-1. Install dependencies
+Cat Them All is an offline-first mobile game that uses your device's camera to display the world around you while cats briefly appear on screen. Test your reflexes and catch all 20 unique cats, each with their own personality and story!
+
+### Features
+
+- **AR Hunt Mode**: Uses your camera to show cats appearing in your surroundings
+- **20 Unique Cats**: Catch charming cats like Amelia the sorceress, Michael the heartthrob, Arthur the loaf, and more
+- **Catdex**: Track your collection and learn about each cat's unique personality
+- **Offline First**: No internet required - all assets are bundled and data is stored locally with SQLite
+- **Quick Reflexes**: Cats appear for only 100-400ms - tap fast to catch them!
+- **Cross Platform**: Runs on iOS, Android, and web
+
+### The Cats
+
+The game features 20 unique cats with distinct personalities:
+- **Amelia** - A paw-erful sorceress who only comes out at night
+- **Michael** - The stereotypical gray cat, mysterious and irresistible
+- **Arthur** - A shy, scaredy cat with unmeasured loafing powers
+- **Thalia** - A rare orange-and-white princess from a faraway planet
+- **Ethan** - A French gentleman artist from the Paris underground scene
+- **Amber** - A secret agent for the cat paw-lice and Karate black belt
+- **Ernesto** - A cat behind bars for orchestrating a cat food factory robbery
+- **Patricia** - Also known as Science Cat, tells puns periodically
+- **Bianca** - A tiny ghost hunter who is terrified of ghosts
+- **Walter** - A gray acrobat who only performs when held up
+- And 10 more unique characters!
+
+Each cat has a unique personality description and funny catch phrase stored in a local SQLite database.
+
+## Tech Stack
+
+- **Framework**: [Expo](https://expo.dev) ~57.0
+- **UI**: React Native 0.86 with React 19
+- **Navigation**: Expo Router with typed routes
+- **Camera**: expo-camera for AR functionality
+- **Database**: expo-sqlite for local storage
+- **Animations**: React Native Reanimated
+- **Language**: TypeScript
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v18 or newer)
+- pnpm (or npm/yarn)
+- For iOS: Xcode and iOS Simulator
+- For Android: Android Studio and Android Emulator
+- For physical devices: Expo Go app
+
+### Installation
+
+1. Clone the repository
 
    ```bash
-   npm install
+   git clone https://github.com/AstraBert/cat-them-all
+   cd cat-them-all
    ```
 
-2. Start the app
+2. Install dependencies
 
    ```bash
-   npx expo start
+   pnpm install
    ```
 
-In the output, you'll find options to open the app in a
+3. Start the development server
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+   ```bash
+   pnpm start
+   ```
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+4. Open the app
 
-## Get a fresh project
+   - **Physical Device**: Scan the QR code with Expo Go (Android) or Camera app (iOS)
+   - **Android Emulator**: Press `a` in the terminal
+   - **iOS Simulator**: Press `i` in the terminal
+   - **Web**: Press `w` in the terminal
 
-When you're ready, run:
+### Development Commands
 
 ```bash
-npm run reset-project
+# Start development server
+pnpm start
+
+# Run on Android
+pnpm android
+
+# Run on iOS
+pnpm ios
+
+# Run on web
+pnpm web
+
+# Lint code
+pnpm lint
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## How to Play
 
-### Other setup steps
+1. **Grant Camera Permission**: The app needs camera access to show cats in AR
+2. **Wait for Cats**: Cats appear randomly on screen for 100-400ms
+3. **Tap Fast**: Tap the cat before it disappears to catch it
+4. **View Collection**: Check the Catdex tab to see your caught cats
+5. **Catch All 20**: Complete your collection to win!
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Game Mechanics
 
-## Learn more
+- **Spawn Timing**: Cats appear every 2-5 seconds (testing mode)
+- **Visibility Window**: Each cat stays visible for 100-400ms
+- **Collection**: Caught cats are saved to SQLite and persist between sessions
+- **Progress**: Track your progress with the "X / 20 caught" counter
 
-To learn more about developing your project with Expo, look at the following resources:
+## Database Schema
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+The app uses SQLite with two tables:
 
-## Join the community
+**cats** - Catalog of all available cats
+- `id` (TEXT): Unique identifier
+- `name` (TEXT): Cat name
+- `asset_path` (TEXT): Path to image asset
+- `meme` (TEXT): Cat personality/lore description
+- `funny_line` (TEXT): Catch phrase
 
-Join our community of developers creating universal apps.
+**caught_cats** - Player's collection
+- `cat_id` (TEXT): Reference to cat
+- `caught_at` (INTEGER): Timestamp
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Customization
+
+### Adding New Cats
+
+1. Add the cat image to `assets/cats/`
+2. Update `src/constants/cats.ts` with the new cat definition
+3. The database will automatically seed the new cat on next launch
+
+### Adjusting Difficulty
+
+Edit `src/components/cat-spawner.tsx`:
+
+```typescript
+// How long cats stay visible (milliseconds)
+const MIN_VISIBLE_MS = 100;
+const MAX_VISIBLE_MS = 400;
+
+// Time between spawns (milliseconds)
+const MIN_HIDDEN_MS = 2 * 1000;  // 2 seconds
+const MAX_HIDDEN_MS = 5 * 1000;  // 5 seconds
+```
