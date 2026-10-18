@@ -12,7 +12,7 @@ Cat Them All is an offline-first mobile game that uses your device's camera to d
 - **20 Unique Cats**: Catch charming cats like Amelia the sorceress, Michael the heartthrob, Arthur the loaf, and more
 - **Catdex**: Track your collection and learn about each cat's unique personality
 - **Offline First**: No internet required - all assets are bundled and data is stored locally with SQLite
-- **Quick Reflexes**: Cats appear for only 100-400ms - tap fast to catch them!
+- **Quick Reflexes**: Cats appear for only 400-800ms - tap fast to catch them!
 - **Cross Platform**: Runs on iOS, Android, and web
 
 ### The Cats
@@ -102,15 +102,15 @@ pnpm lint
 ## How to Play
 
 1. **Grant Camera Permission**: The app needs camera access to show cats in AR
-2. **Wait for Cats**: Cats appear randomly on screen for 100-400ms
+2. **Wait for Cats**: Cats appear randomly on screen for 400-800ms
 3. **Tap Fast**: Tap the cat before it disappears to catch it
 4. **View Collection**: Check the Catdex tab to see your caught cats
 5. **Catch All 20**: Complete your collection to win!
 
 ## Game Mechanics
 
-- **Spawn Timing**: Cats appear every 2-5 seconds (testing mode)
-- **Visibility Window**: Each cat stays visible for 100-400ms
+- **Spawn Timing**: Cats appear every 10-12 minutes
+- **Visibility Window**: Each cat stays visible for 400-800ms
 - **Collection**: Caught cats are saved to SQLite and persist between sessions
 - **Progress**: Track your progress with the "X / 20 caught" counter
 
