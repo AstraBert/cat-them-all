@@ -8,7 +8,7 @@ import { BlinkingCat } from '@/components/blinking-cat';
 const MIN_VISIBLE_MS = 400;
 const MAX_VISIBLE_MS = 800;
 /** Pause between cat appearances (ms) */
-const MIN_HIDDEN_MS = 10 * 60 * 1000; // 10 minutes
+const MIN_HIDDEN_MS = 1 * 60 * 1000; // 1 minute
 const MAX_HIDDEN_MS = 12 * 60 * 1000; // 12 minutes
 
 const CAT_SIZE = 120;
